@@ -4,8 +4,8 @@ rm zestaw3.zip
 hadoop fs -mkdir -p input
 hadoop fs -put ./input/* input
 
-wget https://raw.githubusercontent.com/MightyPancake/big_data_proj_1/refs/heads/main/mapper.py
-wget https://raw.githubusercontent.com/MightyPancake/big_data_proj_1/refs/heads/main/reducer.py
+wget https://raw.githubusercontent.com/MightyPancake/big_data_proj_1/refs/heads/master/mapper.py
+wget https://raw.githubusercontent.com/MightyPancake/big_data_proj_1/refs/heads/master/reducer.py
 sudo chmod +x mapper.py
 sudo chmod +x reducer.py
 
