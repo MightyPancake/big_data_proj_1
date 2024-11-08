@@ -2,43 +2,47 @@
 
 import sys
 
+# Inicjalizacja zmiennych do przechowywania bieżącego klucza i sum
 current_key = None
 injured_sum = 0
 killed_sum = 0
 
-def output_combiner(key, injured_sum, killed_sum):
-    if injured_sum > 0:
-        print(f"{key[0]}\t{key[1]}\t{key[2]}\tranny\t{injured_sum}")
-    if killed_sum > 0:
-        print(f"{key[0]}\t{key[1]}\t{key[2]}\tzabity\t{killed_sum}")
-
-# Przechodzimy po liniach z wejścia
+# Przetwarzanie wejścia linia po linii
 for line in sys.stdin:
+    # Odczytaj i rozdziel wartości
     parts = line.strip().split("\t")
-    
     if len(parts) != 5:
-        continue  # Pomijamy niepoprawne linie
+        continue  # Ignoruj linie niepasujące do oczekiwanego formatu
 
+    # Pobierz wartości z każdej linii
     street, zip_code, victim_type, injury_type, count = parts
     count = int(count)
+    
+    # Zdefiniuj klucz jako (ulica, kod pocztowy, typ poszkodowanego)
     key = (street, zip_code, victim_type)
 
-    # Gromadzimy sumy dla tego samego klucza
-    if key == current_key:
+    # Sprawdź, czy klucz jest taki sam jak poprzedni
+    if current_key == key:
         if injury_type == "ranny":
             injured_sum += count
         elif injury_type == "zabity":
             killed_sum += count
     else:
-        # Wypisujemy wynik dla poprzedniego klucza
+        # Wypisz poprzedni klucz, jeśli jest różny od bieżącego i ma wartości
         if current_key:
-            output_combiner(current_key, injured_sum, killed_sum)
+            if injured_sum > 0:
+                print(f"{current_key[0]}\t{current_key[1]}\t{current_key[2]}\tranny\t{injured_sum}")
+            if killed_sum > 0:
+                print(f"{current_key[0]}\t{current_key[1]}\t{current_key[2]}\tzabity\t{killed_sum}")
 
-        # Resetujemy zmienne dla nowego klucza
+        # Zresetuj zmienne dla nowego klucza
         current_key = key
         injured_sum = count if injury_type == "ranny" else 0
         killed_sum = count if injury_type == "zabity" else 0
 
-# Wypisujemy ostatni wynik
+# Wypisz ostatni klucz na koniec
 if current_key:
-    output_combiner(current_key, injured_sum, killed_sum)
+    if injured_sum > 0:
+        print(f"{current_key[0]}\t{current_key[1]}\t{current_key[2]}\tranny\t{injured_sum}")
+    if killed_sum > 0:
+        print(f"{current_key[0]}\t{current_key[1]}\t{current_key[2]}\tzabity\t{killed_sum}")
