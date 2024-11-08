@@ -1,12 +1,8 @@
-#!/bin/bash
-
-# Usuń istniejący folder output (jeśli istnieje)
 hadoop fs -rm -r output
 
-# Uruchom zadanie map-reduce z hadoop-streaming
 mapred streaming \
     -files mapper.py,reducer.py,combiner.py \
-    -input input/datasource1 \
+    -input input/datasource1/part-00000 \
     -output output \
     -mapper "python3 mapper.py" \
     -combiner "python3 combiner.py" \
