@@ -4,7 +4,7 @@
 hadoop fs -rm -r output
 
 # Uruchom zadanie map-reduce z hadoop-streaming
-hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming.jar \
+hadoop streaming \
     -files mapper.py,reducer.py,combiner.py \
     -input input/datasource1 \
     -output output \
