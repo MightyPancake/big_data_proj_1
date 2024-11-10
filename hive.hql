@@ -3,10 +3,8 @@ SELECT logged_in_user();
 CREATE DATABASE IF NOT EXISTS accidents;
 USE accidents;
 
-DROP TABLE IF EXISTS zip_codes;
 DROP TABLE IF EXISTS incidents;
 DROP TABLE IF EXISTS accidents_top3;
-
 
 CREATE EXTERNAL TABLE IF NOT EXISTS zip_codes (
     zip_code STRING,
@@ -18,8 +16,7 @@ STORED AS TEXTFILE
 LOCATION '${input_dir4}'
 TBLPROPERTIES ("skip.header.line.count"="1");
 
--- Create and load datasource3
-CREATE TABLE incidents (
+CREATE EXTERNAL TABLE IF NOT EXISTS incidents (
     street STRING,
     zip_code STRING,
     victim_type STRING,
@@ -28,7 +25,8 @@ CREATE TABLE incidents (
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
-STORED AS TEXTFILE;
+STORED AS TEXTFILE
+LOCATION '${input_dir3}';
 
 CREATE TABLE IF NOT EXISTS accidents_top3 (
     street STRING,
@@ -45,8 +43,8 @@ WITH total_injuries AS (
     SELECT
         a.street,
         a.victim_type,
-        SUM(CASE WHEN a.injury_type = 'Killed' THEN a.num_injured ELSE 0 END) AS killed,
-        SUM(CASE WHEN a.injury_type = 'Injured' THEN a.num_injured ELSE 0 END) AS injured,
+        SUM(CASE WHEN a.injury_type = 'zabity' THEN a.num_injured ELSE 0 END) AS killed,
+        SUM(CASE WHEN a.injury_type = 'ranny' THEN a.num_injured ELSE 0 END) AS injured,
         SUM(a.num_injured) AS total_count
     FROM
         incidents a
@@ -71,7 +69,7 @@ ranked_streets AS (
         total_injuries
 )
 
-CREATE TABLE IF NOT EXISTS result AS
+INSERT OVERWRITE TABLE accidents_top3
 SELECT
     street,
     victim_type AS person_type,
@@ -84,11 +82,5 @@ WHERE
 ORDER BY
     victim_type, rank;
 
-INSERT OVERWRITE DIRECTORY '${output_dir6}'
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe';
-FIELDS TERMINATED BY '\n'
-SELECT
-    *
-FROM result;
 
-
+select * from incidents;
