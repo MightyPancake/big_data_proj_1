@@ -3,6 +3,11 @@ SELECT logged_in_user();
 CREATE DATABASE IF NOT EXISTS accidents;
 USE accidents;
 
+DROP TABLE IF EXISTS zip_codes;
+DROP TABLE IF EXISTS incidents;
+DROP TABLE IF EXISTS accidents_top3;
+
+
 CREATE EXTERNAL TABLE IF NOT EXISTS zip_codes (
     zip_code STRING,
     borough STRING
