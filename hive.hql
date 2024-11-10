@@ -72,6 +72,11 @@ ranked_streets AS (
 )
 
 INSERT OVERWRITE TABLE accidents_top3
+
+
+
+INSERT OVERWRITE DIRECTORY '${output_dir6}'
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
 SELECT
     street,
     victim_type AS person_type,
@@ -83,3 +88,4 @@ WHERE
     rank <= 3
 ORDER BY
     victim_type, rank;
+
