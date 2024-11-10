@@ -48,7 +48,7 @@ with DAG(
 -files {{ params.dags_home }}/project_files/mapper.py,\
 {{ params.dags_home }}/project_files/combiner.py,\
 {{ params.dags_home }}/project_files/reducer.py \
--input {{ params.input_dir }}/datasource1 \
+-input {{ params.input_dir }}/datasource1/part-00000 \
 -mapper \"python mapper.py\" \
 -combiner \"python combiner.py\" \
 -reducer \"python reducer.py\" \
