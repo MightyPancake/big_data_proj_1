@@ -8,14 +8,12 @@ with DAG(
         "project1-workflow",
         start_date=datetime(2015, 12, 1),
         schedule_interval=None,
-        # TODO Uruchamiając projekt, za każdym razem w konfiguracji uruchomienia Apache Airflow popraw ścieżki w parametrach dags_home i input_dir
-        # DONE Zmień poniżej domyślną wartość parametru classic_or_streaming na zgodną z Twoim projektem
         params={
             "dags_home": Param("/home/TU WPISZ NAZWĘ TWOJEGO KATALOGU/airflow/dags", type="string"),
             "input_dir": Param("gs://TU WPISZ NAZWĘ TWOJEGO ZASOBNIKA/projekt1/input", type="string"),
             "output_mr_dir": Param("/project1/output_mr3", type="string"),
             "output_dir": Param("/project1/output6", type="string"),
-            "classic_or_streaming": Param("classic", enum=["classic", "streaming"]),
+            "classic_or_streaming": Param("streaming", enum=["classic", "streaming"]),
             "pig_or_hive": Param("hive", enum=["hive", "pig"]),
         },
         render_template_as_native_obj=True
@@ -41,23 +39,21 @@ with DAG(
         task_id="pick_classic_or_streaming", python_callable=_pick_classic_or_streaming
     )
 
-    # TODO Jeśli w Twoim projekcie wykorzystywany jest MR Classic zmień poniższe polecenie dostosowując sposób uruchamiania zadania MR
     mapreduce_classic = BashOperator(
         task_id="mapreduce_classic",
         bash_command="""hadoop jar {{ params.dags_home }}/project_files/main.jar com.example.bigdata.Main {{ params.input_dir }}/datasource1 {{ params.output_mr_dir }}""",
     )
 
-    # TODO Jeśli w Twoim projekcie wykorzystywany jest Hadoop Streaming zmień poniższe polecenie dostosowując sposób uruchamiania zadania MR
     hadoop_streaming = BashOperator(
         task_id="hadoop_streaming",
         bash_command="""mapred streaming \
--files {{ params.dags_home }}/project_files/mapper2.py,\
-{{ params.dags_home }}/project_files/combiner2.py,\
-{{ params.dags_home }}/project_files/reducer2.py \
+-files {{ params.dags_home }}/project_files/mapper.py,\
+{{ params.dags_home }}/project_files/combiner.py,\
+{{ params.dags_home }}/project_files/reducer.py \
 -input {{ params.input_dir }}/datasource1 \
--mapper  mapper2.py \
--combiner combiner2.py \
--reducer reducer2.py \
+-mapper  \"python mapper.py \" \
+-combiner \"python combiner.py \" \
+-reducer \"python reducer.py \" \
 -output {{ params.output_mr_dir }} \
  """,
     )
