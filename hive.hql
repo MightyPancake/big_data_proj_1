@@ -1,78 +1,82 @@
--- Drop existing tables
-DROP TABLE IF EXISTS datasource3;
-DROP TABLE IF EXISTS datasource4;
+SELECT logged_in_user();
 
--- Create and load datasource3
-CREATE TABLE datasource3 (
-    street STRING,
-    zip_code STRING,
-    victim_type STRING,
-    injury_type STRING,  -- Zmieniono na STRING, aby odzwierciedlić rodzaj obrażenia (np. "killed" lub "injured")
-    count INT
-)
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\t'
-STORED AS TEXTFILE;
+CREATE DATABASE IF NOT EXISTS accidents;
+USE accidents;
 
-LOAD DATA INPATH '${input_dir3}' INTO TABLE datasource3;
-
--- Create and load datasource4
-CREATE TABLE datasource4 (
+CREATE EXTERNAL TABLE IF NOT EXISTS zip_codes (
     zip_code STRING,
     borough STRING
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
-STORED AS TEXTFILE;
+STORED AS TEXTFILE
+LOCATION '${input_dir4}'
+TBLPROPERTIES ("skip.header.line.count"="1");
 
-LOAD DATA INPATH '${input_dir4}' INTO TABLE datasource4;
+CREATE EXTERNAL TABLE IF NOT EXISTS incidents (
+    street STRING,
+    zip_code STRING,
+    victim_type STRING,
+    injury_type STRING,
+    num_injured INT
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
+WITH SERDEPROPERTIES (
+    "input.regex" = "^(.*?),(.*?),(.*?),(.*?)\\t(\\d+)$"
+)
+STORED AS TEXTFILE
+LOCATION '${input_dir3}';
 
--- Wyselekcjonowanie danych tylko dla Manhattanu
-DROP TABLE IF EXISTS manhattan_data;
+CREATE TABLE IF NOT EXISTS accidents_top3 (
+    street STRING,
+    person_type STRING,
+    killed INT,
+    injured INT
+)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.serde2.JsonSerDe'
+STORED AS TEXTFILE
+LOCATION '${output_dir6}';
 
-CREATE TABLE manhattan_data AS
-SELECT
-    ds3.street,
-    ds3.victim_type AS person_type,
-    ds3.injury_type,
-    ds3.count
-FROM
-    datasource3 ds3
-JOIN
-    datasource4 ds4
-ON
-    ds3.zip_code = ds4.zip_code
-WHERE
-    ds4.borough = 'MANHATTAN';
+WITH total_injuries AS (
+    SELECT
+        a.street,
+        a.victim_type,
+        SUM(CASE WHEN a.injury_type = 'Killed' THEN a.num_injured ELSE 0 END) AS killed,
+        SUM(CASE WHEN a.injury_type = 'Injured' THEN a.num_injured ELSE 0 END) AS injured,
+        SUM(a.num_injured) AS total_count
+    FROM
+        incidents a
+    JOIN
+        zip_codes z
+    ON
+        a.zip_code = z.zip_code
+    WHERE
+        z.borough = 'MANHATTAN'
+    GROUP BY
+        a.street, a.victim_type
+),
 
--- Sumowanie liczby rannych i zabitych dla każdej ulicy i typu poszkodowanych
-DROP TABLE IF EXISTS summed_injured_killed;
-
-CREATE TABLE summed_injured_killed AS
-SELECT
-    street,
-    person_type,
-    SUM(CASE WHEN injury_type = 'killed' THEN count ELSE 0 END) AS total_killed,
-    SUM(CASE WHEN injury_type = 'injured' THEN count ELSE 0 END) AS total_injured
-FROM manhattan_data
-GROUP BY street, person_type;
-
--- Wyselekcjonowanie trzech ulic o najwyższej liczbie poszkodowanych dla każdego typu poszkodowanego
-INSERT OVERWRITE DIRECTORY '${output_dir6}'
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
-SELECT
-    street,
-    person_type,
-    total_killed,
-    total_injured
-FROM (
+ranked_streets AS (
     SELECT
         street,
-        person_type,
-        total_killed,
-        total_injured,
-        ROW_NUMBER() OVER (PARTITION BY person_type ORDER BY (total_killed + total_injured) DESC) AS row_num
-    FROM summed_injured_killed
-) ranked
-WHERE row_num <= 3
-ORDER BY person_type, row_num;
+        victim_type,
+        killed,
+        injured,
+        ROW_NUMBER() OVER (PARTITION BY victim_type ORDER BY total_count DESC) AS rank
+    FROM
+        total_injuries
+)
+
+INSERT OVERWRITE TABLE accidents_top3
+SELECT
+    street,
+    victim_type AS person_type,
+    killed,
+    injured
+FROM
+    ranked_streets
+WHERE
+    rank <= 3
+ORDER BY
+    victim_type, rank;
