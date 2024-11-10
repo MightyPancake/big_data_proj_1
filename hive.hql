@@ -71,10 +71,6 @@ ranked_streets AS (
         total_injuries
 )
 
-INSERT OVERWRITE TABLE accidents_top3
-
-
-
 INSERT OVERWRITE DIRECTORY '${output_dir6}'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
 SELECT
