@@ -1,6 +1,8 @@
+-- Drop existing tables
 DROP TABLE IF EXISTS datasource3;
 DROP TABLE IF EXISTS datasource4;
 
+-- Create and load datasource3
 CREATE TABLE datasource3 (
     street STRING,
     person_type STRING,
@@ -13,6 +15,7 @@ STORED AS TEXTFILE;
 
 LOAD DATA INPATH '${input_dir3}' INTO TABLE datasource3;
 
+-- Create and load datasource4
 CREATE TABLE datasource4 (
     street STRING,
     person_type STRING,
@@ -25,7 +28,24 @@ STORED AS TEXTFILE;
 
 LOAD DATA INPATH '${input_dir4}' INTO TABLE datasource4;
 
-INSERT OVERWRITE DIRECTORY '/user/your_hive_user/output/json_results'
+-- Create summed_injured_killed table
+DROP TABLE IF EXISTS summed_injured_killed;
+
+CREATE TABLE summed_injured_killed AS
+SELECT
+    street,
+    person_type,
+    SUM(killed) AS total_killed,
+    SUM(injured) AS total_injured
+FROM (
+    SELECT street, person_type, killed, injured FROM datasource3
+    UNION ALL
+    SELECT street, person_type, killed, injured FROM datasource4
+) combined
+GROUP BY street, person_type;
+
+-- Insert top 3 streets per person_type based on killed + injured count
+INSERT OVERWRITE DIRECTORY '${output_dir6}'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS JSON
