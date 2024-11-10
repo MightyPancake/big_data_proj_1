@@ -13,19 +13,17 @@ STORED AS TEXTFILE
 LOCATION '${input_dir4}'
 TBLPROPERTIES ("skip.header.line.count"="1");
 
-CREATE EXTERNAL TABLE IF NOT EXISTS incidents (
+-- Create and load datasource3
+CREATE TABLE incidents (
     street STRING,
     zip_code STRING,
     victim_type STRING,
-    injury_type STRING,
-    num_injured INT
+    injury_type STRING,  -- Zmieniono na STRING, aby odzwierciedlić rodzaj obrażenia (np. "killed" lub "injured")
+    count INT
 )
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
-WITH SERDEPROPERTIES (
-    "input.regex" = "^(.*?),(.*?),(.*?),(.*?)\\t(\\d+)$"
-)
-STORED AS TEXTFILE
-LOCATION '${input_dir3}';
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE;
 
 CREATE TABLE IF NOT EXISTS accidents_top3 (
     street STRING,
