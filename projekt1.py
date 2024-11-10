@@ -11,7 +11,7 @@ with DAG(
     params={
       "dags_home": Param("/home/muushroom_pl/airflow/dags", type="string"),
       "input_dir": Param("gs://pbd-24-fk/projekt1/input", type="string"),
-      "output_mr_dir": Param("/project1/output_mr3", type="string"),
+      "output_mr_dir": Param("project1/output_mr3", type="string"),
       "output_dir": Param("/project1/output6", type="string"),
       "classic_or_streaming": Param("streaming", enum=["classic", "streaming"]),
       "pig_or_hive": Param("hive", enum=["hive", "pig"]),
@@ -52,7 +52,7 @@ with DAG(
 -mapper \"python mapper.py\" \
 -combiner \"python combiner.py\" \
 -reducer \"python reducer.py\" \
--output /user/hive{{ params.output_mr_dir }} \
+-output /user/hive/{{ params.output_mr_dir }} \
 """,
   )
 
