@@ -46,7 +46,7 @@ GROUP BY street, person_type;
 
 -- Insert the top 3 records for each person_type into JSON-formatted directory
 INSERT OVERWRITE DIRECTORY '${output_dir6}'
-ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
 SELECT
     street,
     person_type,
