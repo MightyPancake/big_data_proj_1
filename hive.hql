@@ -44,7 +44,9 @@ FROM (
 ) combined
 GROUP BY street, person_type;
 
--- Insert top 3 streets per person_type based on killed + injured count
+-- This crates output dir if it doesn't exist
+!hadoop fs -test -d ${output_dir6} || hadoop fs -mkdir -p ${output_dir6}
+
 INSERT OVERWRITE DIRECTORY '${output_dir6}'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
