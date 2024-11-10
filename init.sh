@@ -4,3 +4,8 @@ rm zestaw3.zip
 hadoop fs -mkdir -p input
 hadoop fs -put ./input/* input
 
+# Init airflow
+export AIRFLOW_HOME=~/airflow
+pip install apache-airflow
+export PATH=$PATH:~/.local/bin
+airflow db migrate
