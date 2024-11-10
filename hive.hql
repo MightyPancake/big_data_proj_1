@@ -23,8 +23,8 @@ CREATE TABLE incidents (
     street STRING,
     zip_code STRING,
     victim_type STRING,
-    injury_type STRING,  -- Zmieniono na STRING, aby odzwierciedlić rodzaj obrażenia (np. "killed" lub "injured")
-    count INT
+    injury_type STRING,
+    num_injured INT
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
