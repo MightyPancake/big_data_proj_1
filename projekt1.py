@@ -8,8 +8,6 @@ with DAG(
     "project1-workflow",
     start_date=datetime(2015, 12, 1),
     schedule_interval=None,
-    # TODO Uruchamiając projekt, za każdym razem w konfiguracji uruchomienia Apache Airflow popraw ścieżki w parametrach dags_home i input_dir
-    # TODO Zmień poniżej domyślną wartość parametru classic_or_streaming na zgodną z Twoim projektem
     params={
       "dags_home": Param("/home/TU WPISZ NAZWĘ TWOJEGO KATALOGU/airflow/dags", type="string"),
       "input_dir": Param("gs://TU WPISZ NAZWĘ TWOJEGO ZASOBNIKA/projekt1/input", type="string"),
@@ -39,25 +37,23 @@ with DAG(
     task_id="pick_classic_or_streaming", python_callable=_pick_classic_or_streaming
   )
 
-  # TODO Jeśli w Twoim projekcie wykorzystywany jest MR Classic zmień poniższe polecenie dostosowując sposób uruchamiania zadania MR
   mapreduce_classic = BashOperator(
     task_id="mapreduce_classic",
     bash_command="""hadoop jar {{ params.dags_home }}/project_files/transform2.jar Transform2 {{ params.input_dir }}/datasource1 {{ params.output_mr_dir }}""",
   )
 
-  # TODO Jeśli w Twoim projekcie wykorzystywany jest Hadoop Streaming zmień poniższe polecenie dostosowując sposób uruchamiania zadania MR
   hadoop_streaming = BashOperator(
     task_id="hadoop_streaming",
     bash_command="""mapred streaming \
--files {{ params.dags_home }}/project_files/mapper2.py,\
-{{ params.dags_home }}/project_files/combiner2.py,\
-{{ params.dags_home }}/project_files/reducer2.py \
+-files {{ params.dags_home }}/project_files/mapper.py,\
+{{ params.dags_home }}/project_files/combiner.py,\
+{{ params.dags_home }}/project_files/reducer.py \
 -input {{ params.input_dir }}/datasource1 \
--mapper  mapper2.py \
--combiner combiner2.py \
--reducer reducer2.py \
+-mapper  mapper.py \
+-combiner combiner.py \
+-reducer reducer.py \
 -output {{ params.output_mr_dir }} \
-... """,
+""",
   )
 
   def _pick_pig_or_hive():
@@ -70,17 +66,15 @@ with DAG(
     task_id="pick_pig_or_hive", python_callable=_pick_pig_or_hive, trigger_rule="none_failed",
   )
 
-  # TODO Jeśli w Twoim projekcie wykorzystywany jest Hive, zmień poniższe polecenia dostosowując sposób uruchamiania skryptu Hive
   hive = BashOperator(
     task_id="hive",
     bash_command="""beeline -u jdbc:hive2://localhost:10000/default \
-      -f {{ params.dags_home }}/project_files/transform5.hql \
+      -f {{ params.dags_home }}/project_files/hive.hql \
       --hivevar input_dir4={{ params.input_dir }}/datasource4 \
       --hivevar input_dir3={{ params.output_mr_dir }} \
       --hivevar output_dir6={{ params.output_dir }}""",
   )
 
-  # TODO Jeśli w Twoim projekcie wykorzystywany jest Pig, zmień poniższe polecenia dostosowując sposób uruchamiania skryptu Pig
   pig = BashOperator(
     task_id="pig",
     bash_command="""pig -f {{ params.dags_home }}/project_files/transform5.pig \

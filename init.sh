@@ -9,3 +9,7 @@ export AIRFLOW_HOME=~/airflow
 pip install apache-airflow
 export PATH=$PATH:~/.local/bin
 airflow db migrate
+
+mkdir -p ~/airflow/dags/project_files
+mv projekt1.py ~/airflow/dags/
+mv *.* ~/airflow/dags/project_files
