@@ -71,8 +71,7 @@ ranked_streets AS (
         total_injuries
 )
 
-INSERT OVERWRITE DIRECTORY '${output_dir6}'
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
+CREATE TABLE IF NOT EXISTS result AS
 SELECT
     street,
     victim_type AS person_type,
@@ -84,4 +83,12 @@ WHERE
     rank <= 3
 ORDER BY
     victim_type, rank;
+
+INSERT OVERWRITE DIRECTORY '${output_dir6}'
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe';
+FIELDS TERMINATED BY '\n'
+SELECT
+    *
+FROM result;
+
 
