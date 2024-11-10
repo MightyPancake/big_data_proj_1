@@ -52,7 +52,7 @@ with DAG(
 -mapper \"python mapper.py\" \
 -combiner \"python combiner.py\" \
 -reducer \"python reducer.py\" \
--output {{ params.output_mr_dir }} \
+-output /user/hive{{ params.output_mr_dir }} \
 """,
   )
 
