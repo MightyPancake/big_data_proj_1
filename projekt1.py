@@ -11,7 +11,7 @@ with DAG(
         params={
             "dags_home": Param("/home/TU WPISZ NAZWĘ TWOJEGO KATALOGU/airflow/dags", type="string"),
             "input_dir": Param("gs://TU WPISZ NAZWĘ TWOJEGO ZASOBNIKA/projekt1/input", type="string"),
-            "output_mr_dir": Param("/project1/output_mr3", type="string"),
+            "output_mr_dir": Param("/user/TU WPISZ NAZWĘ TWOJEGO KATALOGU/project1/output_mr3", type="string"),
             "output_dir": Param("/project1/output6", type="string"),
             "classic_or_streaming": Param("streaming", enum=["classic", "streaming"]),
             "pig_or_hive": Param("hive", enum=["hive", "pig"]),
