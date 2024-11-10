@@ -13,3 +13,5 @@ airflow db migrate
 mkdir -p ~/airflow/dags/project_files
 mv projekt1.py ~/airflow/dags/
 mv *.* ~/airflow/dags/project_files
+
+airflow standalone
